@@ -1,4 +1,4 @@
-module github.com/usepzaka/govalidator
+module github.com/usepzaka/validator
 
 go 1.19
 
