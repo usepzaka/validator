@@ -81,7 +81,7 @@ var ParamTagMap = map[string]ParamValidator{
 var ParamTagRegexMap = map[string]*regexp.Regexp{
 	"range":      regexp.MustCompile(`range\((\d+)\|(\d+)\)$`),
 	"bytelength": regexp.MustCompile(`bytelength\((\d+)\|(\d+)\)$`),
-	"runelength": regexp.MustCompile(`runelength\\((\\d+)\\|(\\d+)\\)$`),
+	"runelength": regexp.MustCompile(`runelength\((\d+)\|(\d+)\)$`),
 	"length":     regexp.MustCompile(`length\((\d+)\)$`),
 	"in":         regexp.MustCompile(`^in\((.*)\)`),
 	"matches":    regexp.MustCompile(`^matches\((.+)\)$`),
@@ -153,7 +153,7 @@ var TagMap = map[string]Validator{
 	"word":               IsWord,
 	"wordspace":          IsWordSpace,
 	"phone":              IsPhone,
-	"indophone":          IsIndoMPhone,
+	"indophone":          IsIndoPhone,
 	"nik":                IsNik,
 	"lowercase":          IsLowerCase,
 	"uppercase":          IsUpperCase,
