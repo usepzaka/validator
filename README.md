@@ -1,8 +1,9 @@
 # validator
-===========
 [![GoDoc](https://godoc.org/github.com/usepzaka/validator?status.png)](https://godoc.org/github.com/usepzaka/validator)
 
-Validator Struct, Variable and Type for GO
+===========
+
+Validator Struct, Interface, Variable and Type for GO
 
 
 #### Installation
