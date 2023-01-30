@@ -1,3 +1,4 @@
+// package validator is package of validators and sanitizers for strings, structs and collections.
 package validator
 
 import (
@@ -7,9 +8,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io"
+
+	// "io/ioutil"
 	"net"
 	"net/url"
 	"reflect"
@@ -25,7 +27,7 @@ import (
 var (
 	fieldsRequiredByDefault bool
 	nilPtrAllowedByRequired = false
-	// notNumberRegexp         = regexp.MustCompile(`[^0-9]+`)
+	// notNumberRegexp         = regexp.MustCompile("[^0-9]+")
 	whiteSpacesAndMinus = regexp.MustCompile(`[\s-]+`)
 	paramsRegexp        = regexp.MustCompile(`\(.*\)$`)
 )
@@ -34,56 +36,46 @@ const maxURLRuneCount = 2083
 const minURLRuneCount = 3
 const rfc3339WithoutZone = "2006-01-02T15:04:05"
 
-// Validate Struct base on Tag "validate" on Struct.
-// Tag support : required, aplhanumeric, phone, letter, number , letternumber, lowercase, uppercase
-func ValidateStruct(structName any) (bool, error) {
-	// If struct nil its return true
-	if structName == nil {
-		return true, nil
-	}
+// SetFieldsRequiredByDefault causes validation to fail when struct fields
+// do not include validations or are not explicitly marked as exempt (using `validate:"-"` or `validate:"email,optional"`).
+// This struct definition will fail govalidator.ValidateStruct() (and the field values do not matter):
+//
+//	type exampleStruct struct {
+//	    Name  string ``
+//	    Email string `validate:"email"`
+//
+// This, however, will only fail when Email is empty or an invalid email address:
+//
+//	type exampleStruct2 struct {
+//	    Name  string `validate:"-"`
+//	    Email string `validate:"email"`
+//
+// Lastly, this will only fail when Email is an invalid email address but not when it's empty:
+//
+//	type exampleStruct2 struct {
+//	    Name  string `validate:"-"`
+//	    Email string `validate:"email,optional"`
+func SetFieldsRequiredByDefault(value bool) {
+	fieldsRequiredByDefault = value
+}
 
-	typeStruct := reflect.TypeOf(structName)
-	valueStruct := reflect.ValueOf(structName)
-	if valueStruct.Kind() == reflect.Interface || valueStruct.Kind() == reflect.Ptr {
-		valueStruct = valueStruct.Elem()
-	}
-	// Just accept structs
-	if valueStruct.Kind() != reflect.Struct {
-		return false, fmt.Errorf("function only accepts structs; got %s", valueStruct.Kind())
-	}
-	var errMessage string
-	for i := 0; i < typeStruct.NumField(); i++ {
-		typeField := typeStruct.Field(i)
-		valueField := valueStruct.Field(i)
-		fieldJson := strings.Split(typeField.Tag.Get("json"), ",")
-		valid := typeField.Tag.Get("validate")
-		key := strings.Split(valid, ",")
-		for j := 0; j < len(key); j++ {
-			valKey := strings.TrimSpace(key[j])
-			jsonField := fieldJson[0]
-			_, message := validateStructTag(valKey, jsonField, valueField, typeField)
-			errMessage += message
-			// return isValid, errors.New(message)
-		}
-	}
-
-	return errMessage != "", errors.New(errMessage)
+// SetNilPtrAllowedByRequired causes validation to pass for nil ptrs when a field is set to required.
+// The validation will still reject ptr fields in their zero value state. Example with this enabled:
+//
+//	type exampleStruct struct {
+//	    Name  *string `validate:"required"`
+//
+// With `Name` set to "", this will be considered invalid input and will cause a validation error.
+// With `Name` set to nil, this will be considered valid by validation.
+// By default this is disabled.
+func SetNilPtrAllowedByRequired(value bool) {
+	nilPtrAllowedByRequired = value
 }
 
 // IsEmail checks if the string is an email.
 func IsEmail(str string) bool {
 	// TODO uppercase letters are not supported
 	return rxEmail.MatchString(str)
-}
-
-// IsPhone checks if the string is a phone number.
-func IsPhone(str string) bool {
-	return rxPhone.MatchString(str)
-}
-
-// IsIndoMPhone checks if the string is a phone number.
-func IsIndoMPhone(str string) bool {
-	return rxIndoMPhone.MatchString(str)
 }
 
 // IsExistingEmail checks if the string is an email of existing domain
@@ -171,6 +163,30 @@ func IsAlpha(str string) bool {
 	return rxAlpha.MatchString(str)
 }
 
+// IsAlphaSpace checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
+func IsAlphaSpace(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxAlphaSpace.MatchString(str)
+}
+
+// IsWord checks if the string contains only letters (a-zA-Z). Empty string is valid.
+func IsWord(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxWord.MatchString(str)
+}
+
+// IsAlphaSpace checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
+func IsWordSpace(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxWordSpace.MatchString(str)
+}
+
 // IsUTFLetter checks if the string contains only unicode letter characters.
 // Similar to IsAlpha but for all languages. Empty string is valid.
 func IsUTFLetter(str string) bool {
@@ -195,6 +211,14 @@ func IsAlphanumeric(str string) bool {
 	return rxAlphanumeric.MatchString(str)
 }
 
+// IsAlphanumericSpace checks if the string contains only letters, numbers and whitespace. Empty string is valid.
+func IsAlphanumericSpace(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxAlphanumericSpace.MatchString(str)
+}
+
 // IsUTFLetterNumeric checks if the string contains only unicode letters and numbers. Empty string is valid.
 func IsUTFLetterNumeric(str string) bool {
 	if IsNull(str) {
@@ -215,6 +239,14 @@ func IsNumeric(str string) bool {
 		return true
 	}
 	return rxNumeric.MatchString(str)
+}
+
+// IsNik checks if the string contains only numbers and 16 digit. Empty string is valid.
+func IsNik(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxNik.MatchString(str)
 }
 
 // IsUTFNumeric checks if the string contains only unicode numbers of any kind.
@@ -968,6 +1000,22 @@ func IsRegex(str string) bool {
 	return false
 }
 
+// IsPhone checks if the string contains only Number , plus(+) sign. Empty string is valid.
+func IsPhone(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxPhone.MatchString(str)
+}
+
+// IsIndoMPhone checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
+func IsIndoMPhone(str string) bool {
+	if IsNull(str) {
+		return true
+	}
+	return rxIndoMPhone.MatchString(str)
+}
+
 func toJSONName(tag string) string {
 	if tag == "" {
 		return ""
@@ -1116,7 +1164,7 @@ func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, erro
 // ValidateStruct use tags for fields.
 // result will be equal to `false` if there are any errors.
 // todo currently there is no guarantee that errors will be returned in predictable order (tests may to fail)
-func ValidateStructX(s interface{}) (bool, error) {
+func ValidateStruct(s interface{}) (bool, error) {
 	if s == nil {
 		return true, nil
 	}
@@ -1220,7 +1268,7 @@ func ValidateMapAsync(s map[string]interface{}, m map[string]interface{}) (<-cha
 	return res, errors
 }
 
-// parseTagIntoMap parses a struct tag `valid:required~Some error message,length(2|3)` into map[string]string{"required": "Some error message", "length(2|3)": ""}
+// parseTagIntoMap parses a struct tag `validate:required~Some error message,length(2|3)` into map[string]string{"required": "Some error message", "length(2|3)": ""}
 func parseTagIntoMap(tag string) tagOptionsMap {
 	optionsMap := make(tagOptionsMap)
 	options := strings.Split(tag, ",")
@@ -1357,11 +1405,13 @@ func StringMatches(s string, params ...string) bool {
 // StringLength checks string's length (including multi byte strings)
 func StringLength(str string, params ...string) bool {
 
-	if len(params) == 2 {
+	if len(params) == 1 {
 		strLength := utf8.RuneCountInString(str)
-		min, _ := ToInt(params[0])
-		max, _ := ToInt(params[1])
-		return strLength >= int(min) && strLength <= int(max)
+		length, _ := ToInt(params[0])
+		// min, _ := ToInt(params[0])
+		// max, _ := ToInt(params[1])
+		// return strLength >= int(min) && strLength <= int(max)
+		return strLength == int(length)
 	}
 
 	return false
@@ -1591,6 +1641,19 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 					continue
 				}
 
+				msgErr := ParamTagErrMsgMap[key]
+				var errMessage string
+				var errMessageNegate string
+				if len(ps) == 2 {
+					errMessage = fmt.Sprintf(msgErr, ps[1])
+					errMessageNegate = fmt.Sprintf(msgErr, ps[1])
+				}
+
+				if len(ps) == 3 {
+					errMessage = fmt.Sprintf(msgErr, ps[1], ps[2])
+					errMessageNegate = fmt.Sprintf(msgErr, ps[1], ps[2])
+				}
+
 				delete(options, validatorSpec)
 
 				switch v.Kind() {
@@ -1605,9 +1668,9 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, Error{t.Name, fmt.Errorf(errMessageNegate), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+						return false, Error{t.Name, fmt.Errorf(errMessage), customMsgExists, stripParams(validatorSpec), []string{}}
 					}
 				default:
 					// type not yet supported, fail
