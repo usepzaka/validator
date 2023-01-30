@@ -260,12 +260,8 @@ var fn validator.ConditionIterator = func(value interface{}, index int) bool {
 _ = validator.Filter(data, fn) // result = []interface{}{2, 4, 6, 8, 10}
 _ = validator.Count(data, fn) // result = 5
 ```
-###### ValidateStruct [#2](https://github.com/usepzaka/validator/pull/2)
-If you want to validate structs, you can use tag `valid` for any field in your structure. All validators used with this field in one tag are separated by comma. If you want to skip validation, place `-` in your tag. If you need a validator that is not on the list below, you can add it like this:
-```go
-validator.TagMap["duck"] = validator.Validator(func(str string) bool {
-	return str == "duck"
-})
+###### ValidateStruct
+If you want to validate structs, you can use tag `validate` for any field in your structure. All validators used with this field in one tag are separated by comma. If you want to skip validation, place `-` in your tag. 
 ```
 For completely custom validators (interface-based), see below.
 
@@ -277,8 +273,14 @@ Here is a list of available validators for struct fields (validator - used funct
 "requrl":             IsRequestURL,
 "requri":             IsRequestURI,
 "alpha":              IsAlpha,
+"alphaspace":         IsAlphaSpace,
 "utfletter":          IsUTFLetter,
 "alphanum":           IsAlphanumeric,
+"alphanumspace":      IsAlphanumericSpace,
+"word":               IsWord,
+"wordspace":          IsWordSpace,
+"phone":			  IsPhone,
+"indophone":		  IsIndoPhone,
 "utfletternum":       IsUTFLetterNumeric,
 "numeric":            IsNumeric,
 "utfnumeric":         IsUTFNumeric,
@@ -327,15 +329,15 @@ Here is a list of available validators for struct fields (validator - used funct
 Validators with parameters
 
 ```go
+"length(int)": StringLength,
 "range(min|max)": Range,
-"length(min|max)": ByteLength,
+"minlength(int)": MinStringLength,
+"maxlength(int)": MaxStringLength,
+"bytelength(min|max)": ByteLength,
 "runelength(min|max)": RuneLength,
-"stringlength(min|max)": StringLength,
 "matches(pattern)": StringMatches,
 "in(string1|string2|...|stringN)": IsIn,
 "rsapub(keylength)" : IsRsaPub,
-"minstringlength(int): MinStringLength,
-"maxstringlength(int): MaxStringLength,
 ```
 Validators with parameters for any type
 
@@ -347,49 +349,30 @@ And here is small example of usage:
 ```go
 type Post struct {
 	Title    string `valid:"alphanum,required"`
-	Message  string `valid:"duck,ascii"`
-	Message2 string `valid:"animal(dog)"`
-	AuthorIP string `valid:"ipv4"`
-	Date     string `valid:"-"`
+	Message2 string `valid:"type(string)"`
+	IpAddress string `valid:"ipv4"`
+	Phone     string `valid:"phone"`
 }
 post := &Post{
 	Title:   "My Example Post",
 	Message: "duck",
-	Message2: "dog",
-	AuthorIP: "123.234.54.3",
+	IpAddress: "123.234.54.3",
+	Message2: "087812345678",
 }
-
-// Add your own struct validation tags
-validator.TagMap["duck"] = validator.Validator(func(str string) bool {
-	return str == "duck"
-})
-
-// Add your own struct validation tags with parameter
-validator.ParamTagMap["animal"] = validator.ParamValidator(func(str string, params ...string) bool {
-    species := params[0]
-    return str == species
-})
-validator.ParamTagRegexMap["animal"] = regexp.MustCompile("^animal\\((\\w+)\\)$")
-
-result, err := validator.ValidateStruct(post)
-if err != nil {
-	println("error: " + err.Error())
-}
-println(result)
 ```
-###### ValidateMap [#2](https://github.com/usepzaka/validator/pull/338)
+###### ValidateMap 
 If you want to validate maps, you can use the map to be validated and a validation map that contain the same tags used in ValidateStruct, both maps have to be in the form `map[string]interface{}`
 
 So here is small example of usage:
 ```go
 var mapTemplate = map[string]interface{}{
-	"name":"required,alpha",
-	"family":"required,alpha",
+	"name":"required,alphaspace",
+	"family":"required,alphaspace",
 	"email":"required,email",
-	"cell-phone":"numeric",
+	"cell-phone":"phone",
 	"address":map[string]interface{}{
-		"line1":"required,alphanum",
-		"line2":"alphanum",
+		"line1":"required,alphanumspace",
+		"line2":"wordspace",
 		"postal-code":"numeric",
 	},
 }
@@ -397,7 +380,7 @@ var mapTemplate = map[string]interface{}{
 var inputMap = map[string]interface{}{
 	"name":"Bob",
 	"family":"Smith",
-	"email":"foo@bar.baz",
+	"email":"foo@bar.com",
 	"address":map[string]interface{}{
 		"line1":"",
 		"line2":"",

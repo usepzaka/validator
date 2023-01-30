@@ -1009,7 +1009,7 @@ func IsPhone(str string) bool {
 }
 
 // IsIndoMPhone checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
-func IsIndoMPhone(str string) bool {
+func IsIndoPhone(str string) bool {
 	if IsNull(str) {
 		return true
 	}

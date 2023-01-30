@@ -497,7 +497,7 @@ func TestIsPhone(t *testing.T) {
 	}
 }
 
-func TestIsIndoMPhone(t *testing.T) {
+func TestIsIndoPhone(t *testing.T) {
 	t.Parallel()
 
 	var tests = []struct {
@@ -551,7 +551,7 @@ func TestIsIndoMPhone(t *testing.T) {
 		{"087864523425", true},
 	}
 	for _, test := range tests {
-		actual := IsIndoMPhone(test.param)
+		actual := IsIndoPhone(test.param)
 		if actual != test.expected {
 			t.Errorf("Expected IsPhone(%q) to be %v, got %v", test.param, test.expected, actual)
 		}
