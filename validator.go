@@ -1013,7 +1013,7 @@ func IsIndoPhone(str string) bool {
 	if IsNull(str) {
 		return true
 	}
-	return rxIndoMPhone.MatchString(str)
+	return rxIndoPhone.MatchString(str)
 }
 
 func toJSONName(tag string) string {

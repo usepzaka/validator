@@ -547,6 +547,7 @@ func TestIsIndoPhone(t *testing.T) {
 		{"++", false},
 		{"+182435456", false},
 		{"+6282435456", true},
+		{"+62 82435456", false},
 		{"6235645647777", true},
 		{"087864523425", true},
 	}
