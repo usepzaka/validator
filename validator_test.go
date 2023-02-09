@@ -2657,7 +2657,11 @@ type UserValid struct {
 	Home     *Address
 	Work     []Address `validate:"required"`
 }
-
+type UserPhone struct {
+	Name      string `json:"name"`
+	Phone     string `json:"phone" validate:"phone"`
+	IndoPhone string `json:"indophone" validate:"indophone"`
+}
 type PrivateStruct struct {
 	privateField string `validate:"required,alpha,d_k"`
 	NonZero      int
@@ -3295,6 +3299,8 @@ func TestValidateStruct(t *testing.T) {
 		{UserValid{"John", "john@yahoo.com", "12345678", 20, &Address{"Street", "123456xxx"}, []Address{{"Street", "123456"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
+		{UserPhone{"John", "+6581311034738", "6581311034738"}, false},
+		{UserPhone{"John2", "+6281311034738", "6581311034738"}, true},
 		{nil, true},
 		{User{"John", "john@yahoo.com", "123G#678", 0, &Address{"Street", "123456"}, []Address{}}, false},
 		{"im not a struct", false},

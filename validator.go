@@ -1008,7 +1008,7 @@ func IsPhone(str string) bool {
 	return rxPhone.MatchString(str)
 }
 
-// IsIndoMPhone checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
+// IsIndoPhone checks if the string contains only Indonesia Phone format (62xxxx or 08XXXX or +628XXXXXX) Empty string is valid.
 func IsIndoPhone(str string) bool {
 	if IsNull(str) {
 		return true
@@ -1692,9 +1692,9 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, Error{t.Name, fmt.Errorf(TagErrNegMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+						return false, Error{t.Name, fmt.Errorf(TagErrMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)
