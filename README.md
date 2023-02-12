@@ -221,11 +221,11 @@ type User	struct {
   Age  int         `valid:"type(int)"`
   Meta interface{} `valid:"type(string)"`
 }
-result, err := validator.ValidateStruct(User{"Bob", 20, "meta"})
+err := validator.ValidateStruct(User{"Bob", 20, "meta"})
 if err != nil {
 	println("error: " + err.Error())
 }
-println(result)
+
 ```
 ###### ToString
 ```go
@@ -396,11 +396,11 @@ var inputMap = map[string]interface{}{
 	},
 }
 
-result, err := validator.ValidateMap(inputMap, mapTemplate)
+err := validator.ValidateMap(inputMap, mapTemplate)
 if err != nil {
 	println("error: " + err.Error())
 }
-println(result)
+
 ```
 
 ###### WhiteList
