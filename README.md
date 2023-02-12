@@ -180,8 +180,8 @@ func Trim(str, chars string) string
 func Truncate(str string, length int, ending string) string
 func TruncatingErrorf(str string, args ...interface{}) error
 func UnderscoreToCamelCase(s string) string
-func ValidateMap(inputMap map[string]interface{}, validationMap map[string]interface{}) (bool, error)
-func ValidateStruct(s interface{}) (bool, error)
+func ValidateMap(inputMap map[string]interface{}, validationMap map[string]interface{}) error
+func ValidateStruct(s interface{}) error
 func WhiteList(str, chars string) string
 type ConditionIterator
 type CustomTypeValidator
@@ -253,6 +253,7 @@ var fn validator.ResultIterator = func(value interface{}, index int) interface{}
 }
 _ = validator.Map(data, fn) // result = []interface{}{1, 6, 9, 12, 15}
 ```
+
 ```go
 data := []interface{}{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 var fn validator.ConditionIterator = func(value interface{}, index int) bool {
@@ -263,88 +264,94 @@ _ = validator.Count(data, fn) // result = 5
 ```
 ###### ValidateStruct
 If you want to validate structs, you can use tag `validate` for any field in your structure. All validators used with this field in one tag are separated by comma. If you want to skip validation, place `-` in your tag. 
-```
+
 For completely custom validators (interface-based), see below.
 
 Here is a list of available validators for struct fields (validator - used function):
-```go
-"email":              IsEmail,
-"url":                IsURL,
-"dialstring":         IsDialString,
-"requrl":             IsRequestURL,
-"requri":             IsRequestURI,
-"alpha":              IsAlpha,
-"alphaspace":         IsAlphaSpace,
-"utfletter":          IsUTFLetter,
-"alphanum":           IsAlphanumeric,
-"alphanumspace":      IsAlphanumericSpace,
-"word":               IsWord,
-"wordspace":          IsWordSpace,
-"phone":			  IsPhone,
-"indophone":		  IsIndoPhone,
-"utfletternum":       IsUTFLetterNumeric,
-"numeric":            IsNumeric,
-"utfnumeric":         IsUTFNumeric,
-"utfdigit":           IsUTFDigit,
-"hexadecimal":        IsHexadecimal,
-"hexcolor":           IsHexcolor,
-"rgbcolor":           IsRGBcolor,
-"lowercase":          IsLowerCase,
-"uppercase":          IsUpperCase,
-"int":                IsInt,
-"float":              IsFloat,
-"null":               IsNull,
-"uuid":               IsUUID,
-"uuidv3":             IsUUIDv3,
-"uuidv4":             IsUUIDv4,
-"uuidv5":             IsUUIDv5,
-"creditcard":         IsCreditCard,
-"isbn10":             IsISBN10,
-"isbn13":             IsISBN13,
-"json":               IsJSON,
-"multibyte":          IsMultibyte,
-"ascii":              IsASCII,
-"printableascii":     IsPrintableASCII,
-"fullwidth":          IsFullWidth,
-"halfwidth":          IsHalfWidth,
-"variablewidth":      IsVariableWidth,
-"base64":             IsBase64,
-"datauri":            IsDataURI,
-"ip":                 IsIP,
-"port":               IsPort,
-"ipv4":               IsIPv4,
-"ipv6":               IsIPv6,
-"dns":                IsDNSName,
-"host":               IsHost,
-"mac":                IsMAC,
-"latitude":           IsLatitude,
-"longitude":          IsLongitude,
-"ssn":                IsSSN,
-"semver":             IsSemver,
-"rfc3339":            IsRFC3339,
-"rfc3339WithoutZone": IsRFC3339WithoutZone,
-"ISO3166Alpha2":      IsISO3166Alpha2,
-"ISO3166Alpha3":      IsISO3166Alpha3,
-"ulid":               IsULID,
-```
+
+
+| Tag | Description |
+| - | - |
+| "email" |               Email format value allowed|
+| "url" |                URL format value allowed |
+| "dialstring" |           Dial String format value allowed |
+| "requrl"  |            RequestURL format value allowed |
+| "requri"  |            RequestURI format value allowed |
+| "alpha"   |            Alphabet format value allowed |
+| "alphaspace" |        Alphabet and whiteSpace allowee |
+| "utfletter" |        UTF Letter format value allowed |
+| "alphanum" |          Alphabet and numeric format value allowed |
+| "alphanumspace" |      Alphabet numeric and whitespace format value allowed|
+| "word" |               Alphabet, numeric, (-) and (_)values are allowed |
+| "wordspace" |          Alphabet, numeric, (-), (_) and whitespace values are allowed |
+| "phone" |			  Phone format without space are allowed |
+| "indophone" |		  Indonesia phone number format are allowed. (Ex: 628xxxx. 08xxxx, +628xxxxx) |
+| "utfletternum" |       UTF Letter values are allowed |
+| "numeric" |            Numeric values are allowed |
+| "utfnumeric" |         UTF Numeric values are allowed |
+| "utfdigit" |           UTF Digit values are allowed |
+| "hexadecimal" |        Hexadecmal values are allowed |
+| "hexcolor" |          Hex COlor values are allowed |
+| "rgbcolor" |            RGB color  values are allowed |
+| "lowercase" |          Lower-Case values are allowed  |
+| "uppercase" |         Upper-Case  values are allowed  |
+| "int" |         Int values are allowed  |
+| "float" |              Float values are allowed  |
+| "null" |               Null values are allowed  |
+| "uuid" |               UUID values are allowed  |
+| "uuidv3" |             UUIDv3 values are allowed  |
+| "uuidv4" |             UUID values are allowed  |
+| "uuidv5" |             UUID values are allowed  |
+| "creditcard" |         Credit Card values are allowed  |
+| "isbn10" |            ISBN10 values are allowed  |
+| "isbn13" |             ISBN13 values are allowed  |
+| "json" |               JSON values are allowed  |
+| "multibyte" |          Multibyte values are allowed  |
+| "ascii" |              ASCII values are allowed  |
+| "printableascii" |     PrintableASCII values are allowed  |
+| "fullwidth" |         FullWidth values are allowed  |
+| "halfwidth" |          HalfWidth values are allowed  |
+| "variablewidth" |      VariableWidth values are allowed  |
+| "base64" |             Base64 values are allowed  |
+| "datauri" |            DataURI values are allowed  |
+| "ip" |                 IP values are allowed  |
+| "port" |               Port values are allowed  |
+| "ipv4" |              IPv4 values are allowed  |
+| "ipv6" |              IPv6 | values are allowed 
+| "dns" |              DNSName values are allowed  |
+| "host" |               Host values are allowed  |
+| "mac" |                MAC values are allowed  |
+| "latitude" |           Latitude values are allowed  |
+| "longitude" |          Longitude values are allowed  |
+| "ssn" |                SSN values are allowed  |
+| "semver" |             Semver values are allowed  |
+| "rfc3339" |            RFC3339 values are allowed  |
+| "rfc3339WithoutZone" | RFC3339WithoutZone values are allowed  |
+| "ISO3166Alpha2" |      ISO3166Alpha2 values are allowed  |
+| "ISO3166Alpha3" |     ISO3166Alpha3 values are allowed  |
+| "ulid" |               ULID values are allowed  |
+
 Validators with parameters
 
-```go
-"length(int)": StringLength,
-"range(min|max)": Range,
-"minlength(int)": MinStringLength,
-"maxlength(int)": MaxStringLength,
-"bytelength(min|max)": ByteLength,
-"runelength(min|max)": RuneLength,
-"matches(pattern)": StringMatches,
-"in(string1|string2|...|stringN)": IsIn,
-"rsapub(keylength)" : IsRsaPub,
-```
+| Tag | Use Function |
+| - | - |
+| `length(int)` | validate length of string |
+| `range(min\|max)` | Range  |
+| `min(int)` | Minimum String length  |
+| `max(int)` | Maximum String length |
+| `bytelength(min\|max)` |  Length of byte |
+| `runelength(min\|max)` | Length of Rune |
+| `matches(pattern)` | String matches of regular expression pattern |
+| `in(string1\|string2\|...\|stringN)` | String is a member of the set of strings params |
+| `rsapub(keylength)` | String is a RSApub |
+
+
 Validators with parameters for any type
 
-```go
-"type(type)": IsType,
-```
+| Tag | Use Function |
+| - | - |
+| `type(type)` | validate type of struct|
+
 
 And here is small example of usage:
 ```go

@@ -1062,9 +1062,9 @@ func ValidateArray(array []interface{}, iterator ConditionIterator) bool {
 // m is the validation map in the form:
 //
 //	map[string]interface{}{"name":"required,alpha","address":map[string]interface{}{"line1":"required,alphanum"}}
-func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, error) {
+func ValidateMap(s map[string]interface{}, m map[string]interface{}) error {
 	if s == nil {
-		return true, nil
+		return nil
 	}
 	result := true
 	var err error
@@ -1095,7 +1095,7 @@ func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, erro
 				err = prependPathToErrors(err, key)
 				errs = append(errs, err)
 			} else {
-				mapResult, err = ValidateMap(v, subValidator)
+				err = ValidateMap(v, subValidator)
 				if err != nil {
 					mapResult = false
 					err = prependPathToErrors(err, key)
@@ -1107,7 +1107,7 @@ func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, erro
 				(valueField.Kind() == reflect.Ptr && valueField.Elem().Kind() == reflect.Struct)) &&
 				subValidator != "-" {
 				var err error
-				structResult, err = ValidateStruct(valueField.Interface())
+				err = ValidateStruct(valueField.Interface())
 				if err != nil {
 					err = prependPathToErrors(err, key)
 					errs = append(errs, err)
@@ -1137,13 +1137,13 @@ func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, erro
 		index++
 	}
 	// checks required keys
-	requiredResult := true
+	// requiredResult := true
 	for key, value := range m {
 		if schema, ok := value.(string); ok {
 			tags := parseTagIntoMap(schema)
 			if required, ok := tags["required"]; ok {
 				if _, ok := s[key]; !ok {
-					requiredResult = false
+					// requiredResult = false
 					if required.customErrorMessage != "" {
 						err = Error{key, fmt.Errorf(required.customErrorMessage), true, "required", []string{}}
 					} else {
@@ -1158,15 +1158,15 @@ func ValidateMap(s map[string]interface{}, m map[string]interface{}) (bool, erro
 	if len(errs) > 0 {
 		err = errs
 	}
-	return result && requiredResult, err
+	return err
 }
 
 // ValidateStruct use tags for fields.
 // result will be equal to `false` if there are any errors.
 // todo currently there is no guarantee that errors will be returned in predictable order (tests may to fail)
-func ValidateStruct(s interface{}) (bool, error) {
+func ValidateStruct(s interface{}) error {
 	if s == nil {
-		return true, nil
+		return nil
 	}
 	result := true
 	var err error
@@ -1176,7 +1176,7 @@ func ValidateStruct(s interface{}) (bool, error) {
 	}
 	// we only accept structs
 	if val.Kind() != reflect.Struct {
-		return false, fmt.Errorf("function only accepts structs; got %s", val.Kind())
+		return fmt.Errorf("function only accepts structs; got %s", val.Kind())
 	}
 	var errs Errors
 	for i := 0; i < val.NumField(); i++ {
@@ -1193,7 +1193,7 @@ func ValidateStruct(s interface{}) (bool, error) {
 			(valueField.Kind() == reflect.Ptr && valueField.Elem().Kind() == reflect.Struct)) &&
 			typeField.Tag.Get(tagName) != "-" {
 			var err error
-			structResult, err = ValidateStruct(valueField.Interface())
+			err = ValidateStruct(valueField.Interface())
 			if err != nil {
 				err = prependPathToErrors(err, typeField.Name)
 				errs = append(errs, err)
@@ -1229,11 +1229,11 @@ func ValidateStruct(s interface{}) (bool, error) {
 	if len(errs) > 0 {
 		err = errs
 	}
-	return result, err
+	return err
 }
 
 // ValidateStructAsync performs async validation of the struct and returns results through the channels
-func ValidateStructAsync(s interface{}) (<-chan bool, <-chan error) {
+func ValidateStructAsync(s interface{}) <-chan error {
 	res := make(chan bool)
 	errors := make(chan error)
 
@@ -1241,17 +1241,17 @@ func ValidateStructAsync(s interface{}) (<-chan bool, <-chan error) {
 		defer close(res)
 		defer close(errors)
 
-		isValid, isFailed := ValidateStruct(s)
+		isFailed := ValidateStruct(s)
 
-		res <- isValid
+		// res <- isValid
 		errors <- isFailed
 	}()
 
-	return res, errors
+	return errors
 }
 
 // ValidateMapAsync performs async validation of the map and returns results through the channels
-func ValidateMapAsync(s map[string]interface{}, m map[string]interface{}) (<-chan bool, <-chan error) {
+func ValidateMapAsync(s map[string]interface{}, m map[string]interface{}) <-chan error {
 	res := make(chan bool)
 	errors := make(chan error)
 
@@ -1259,13 +1259,13 @@ func ValidateMapAsync(s map[string]interface{}, m map[string]interface{}) (<-cha
 		defer close(res)
 		defer close(errors)
 
-		isValid, isFailed := ValidateMap(s, m)
+		isFailed := ValidateMap(s, m)
 
-		res <- isValid
+		// res <- isValid
 		errors <- isFailed
 	}()
 
-	return res, errors
+	return errors
 }
 
 // parseTagIntoMap parses a struct tag `validate:required~Some error message,length(2|3)` into map[string]string{"required": "Some error message", "length(2|3)": ""}
@@ -1721,7 +1721,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 					return false, err
 				}
 			} else {
-				resultItem, err = ValidateStruct(v.MapIndex(k).Interface())
+				err = ValidateStruct(v.MapIndex(k).Interface())
 				if err != nil {
 					err = prependPathToErrors(err, t.Name+"."+sv[i].Interface().(string))
 					return false, err
@@ -1741,7 +1741,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 					return false, err
 				}
 			} else {
-				resultItem, err = ValidateStruct(v.Index(i).Interface())
+				err = ValidateStruct(v.Index(i).Interface())
 				if err != nil {
 					err = prependPathToErrors(err, t.Name+"."+strconv.Itoa(i))
 					return false, err
@@ -1755,7 +1755,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 		if v.IsNil() {
 			return true, nil
 		}
-		return ValidateStruct(v.Interface())
+		return ValidateStruct(v.Interface()) == nil, ValidateStruct(v.Interface())
 	case reflect.Ptr:
 		// If the value is a pointer then checks its element
 		if v.IsNil() {

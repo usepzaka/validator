@@ -524,7 +524,7 @@ func TestIsIndoPhone(t *testing.T) {
 		{"\u0070", false}, //UTF-8(ASCII): p
 		{"\u0026", false}, //UTF-8(ASCII): &
 		{"\u0030", false}, //UTF-8(ASCII): 0
-		{"123", true},
+		{"123", false},
 		{"0123", true},
 		{"-00123", false},
 		{"0", false},
@@ -2743,7 +2743,8 @@ func TestValidateMissingValidationDeclarationStruct(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2763,7 +2764,8 @@ func TestFieldRequiredByDefault(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2783,7 +2785,8 @@ func TestMultipleFieldsRequiredByDefault(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2806,7 +2809,8 @@ func TestFieldsRequiredByDefaultButExemptStruct(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2830,7 +2834,8 @@ func TestFieldsRequiredByDefaultButExemptOrOptionalStruct(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2847,9 +2852,9 @@ func TestInvalidValidator(t *testing.T) {
 	}
 
 	invalidStruct := InvalidStruct{1}
-	if valid, err := ValidateStruct(&invalidStruct); valid || err == nil ||
+	if err := ValidateStruct(&invalidStruct); err == nil ||
 		err.Error() != `Field: the following validator is invalid or can't be applied to the field: "someInvalidValidator"` {
-		t.Errorf("Got an unexpected result for struct with invalid validator: %t %s", valid, err)
+		t.Errorf("Got an unexpected result for struct with invalid validator: %t %s", err == nil, err)
 	}
 }
 
@@ -2866,23 +2871,23 @@ func TestCustomValidator(t *testing.T) {
 		Field int `validate:"customTrueValidator,required"`
 	}
 
-	if valid, err := ValidateStruct(&ValidStruct{Field: 1}); !valid || err != nil {
-		t.Errorf("Got an unexpected result for struct with custom always true validator: %t %s", valid, err)
+	if err := ValidateStruct(&ValidStruct{Field: 1}); err != nil {
+		t.Errorf("Got an unexpected result for struct with custom always true validator: %t %s", err == nil, err)
 	}
 
-	if valid, err := ValidateStruct(&InvalidStruct{Field: 1}); valid || err == nil || err.Error() != "Value: 1 Custom validator error: customFalseValidator" {
+	if err := ValidateStruct(&InvalidStruct{Field: 1}); err == nil || err.Error() != "Value: 1 Custom validator error: customFalseValidator" {
 		fmt.Println(err)
-		t.Errorf("Got an unexpected result for struct with custom always false validator: %t %s", valid, err)
+		t.Errorf("Got an unexpected result for struct with custom always false validator: %t %s", err == nil, err)
 	}
 
 	mixedStruct := StructWithCustomAndBuiltinValidator{}
-	if valid, err := ValidateStruct(&mixedStruct); valid || err == nil || err.Error() != "Field: non zero value required" {
-		t.Errorf("Got an unexpected result for invalid struct with custom and built-in validators: %t %s", valid, err)
+	if err := ValidateStruct(&mixedStruct); err == nil || err.Error() != "Field: non zero value required" {
+		t.Errorf("Got an unexpected result for invalid struct with custom and built-in validators: %t %s", err == nil, err)
 	}
 
 	mixedStruct.Field = 1
-	if valid, err := ValidateStruct(&mixedStruct); !valid || err != nil {
-		t.Errorf("Got an unexpected result for valid struct with custom and built-in validators: %t %s", valid, err)
+	if err := ValidateStruct(&mixedStruct); err != nil {
+		t.Errorf("Got an unexpected result for valid struct with custom and built-in validators: %t %s", err == nil, err)
 	}
 }
 
@@ -2939,7 +2944,8 @@ func TestStructWithCustomByteArray(t *testing.T) {
 	}
 	SetFieldsRequiredByDefault(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2965,7 +2971,8 @@ func TestValidateNegationStruct(t *testing.T) {
 		{NegationStruct{"11", "11"}, false},
 	}
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -2986,7 +2993,8 @@ func TestLengthStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3011,7 +3019,8 @@ func TestStringLengthStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3032,7 +3041,8 @@ func TestStringMatchesStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3052,9 +3062,10 @@ func TestIsInStruct(t *testing.T) {
 		{IsInStruct{" "}, false},
 		{IsInStruct{"ABSENT"}, false},
 	}
-
+	var actual bool
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual = (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3080,7 +3091,8 @@ func TestRequiredIsInStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3106,7 +3118,8 @@ func TestEmptyRequiredIsInStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3138,8 +3151,8 @@ func TestEmptyStringPtr(t *testing.T) {
 
 	SetNilPtrAllowedByRequired(true)
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
-
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 		}
@@ -3219,8 +3232,8 @@ func TestNestedStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
-
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 		}
@@ -3250,7 +3263,8 @@ func TestFunkyIsInStruct(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3300,13 +3314,14 @@ func TestValidateStruct(t *testing.T) {
 		{UserValid{"John", "john!yahoo.com", "12345678", 20, &Address{"Street", "ABC456D89"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserValid{"John", "", "12345", 0, &Address{"Street", "123456789"}, []Address{{"Street", "ABC456D89"}, {"Street", "123456"}}}, false},
 		{UserPhone{"John", "+6581311034738", "6581311034738"}, false},
-		{UserPhone{"John2", "+6281311034738", "6581311034738"}, true},
+		{UserPhone{"John2", "+6281311034738", "6281311034738"}, true},
 		{nil, true},
 		{User{"John", "john@yahoo.com", "123G#678", 0, &Address{"Street", "123456"}, []Address{}}, false},
 		{"im not a struct", false},
 	}
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3318,10 +3333,10 @@ func TestValidateStruct(t *testing.T) {
 	TagMap["d_k"] = Validator(func(str string) bool {
 		return str == "d_k"
 	})
-	result, err := ValidateStruct(PrivateStruct{"d_k", 0, []int{1, 2}, []string{"hi", "super"}, [2]Address{{"Street", "123456"},
+	err := ValidateStruct(PrivateStruct{"d_k", 0, []int{1, 2}, []string{"hi", "super"}, [2]Address{{"Street", "123456"},
 		{"Street", "123456"}}, Address{"Street", "123456"}, map[string]Address{"address": {"Street", "123456"}}})
-	if !result {
-		t.Log("Case ", 6, ": expected ", true, " when result is ", result)
+	if err != nil {
+		t.Log("Case ", 6, ": expected ", true, " when result is ", err == nil)
 		t.Error(err)
 		t.FailNow()
 	}
@@ -3443,7 +3458,8 @@ func TestRequired(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		actual, err := ValidateStruct(test.param)
+		err := ValidateStruct(test.param)
+		actual := (err == nil)
 		if actual != test.expected {
 			t.Errorf("Expected ValidateStruct(%q) to be %v, got %v", test.param, test.expected, actual)
 			if err != nil {
@@ -3463,11 +3479,11 @@ func TestErrorByField(t *testing.T) {
 		{"message", ""},
 		{"Message", ""},
 		{"title", ""},
-		{"Title", "My123 does not validate as alpha"},
-		{"AuthorIP", "123 does not validate as ipv4"},
+		{"Title", "only alphabet values are allowed, found My123"},
+		{"AuthorIP", "only IP v4 format values are allowed, found 123"},
 	}
 	post := &Post{"My123", "duck13126", "123"}
-	_, err := ValidateStruct(post)
+	err := ValidateStruct(post)
 
 	for _, test := range tests {
 		actual := ErrorByField(err, test.param)
@@ -3484,11 +3500,11 @@ func TestErrorsByField(t *testing.T) {
 		param    string
 		expected string
 	}{
-		{"Title", "My123 does not validate as alpha"},
-		{"AuthorIP", "123 does not validate as ipv4"},
+		{"Title", "only alphabet values are allowed, found My123"},
+		{"AuthorIP", "only IP v4 format values are allowed, found 123"},
 	}
 	post := &Post{Title: "My123", Message: "duck13126", AuthorIP: "123"}
-	_, err := ValidateStruct(post)
+	err := ValidateStruct(post)
 	errs := ErrorsByField(err)
 	if len(errs) != 2 {
 		t.Errorf("There should only be 2 errors but got %v", len(errs))
@@ -3509,7 +3525,7 @@ func TestErrorsByField(t *testing.T) {
 	}
 
 	message := &MessageWithSeveralFieldsStruct{Title: ";:;message;:;", Body: ";:;message;:;"}
-	_, err = ValidateStruct(message)
+	err = ValidateStruct(message)
 	errs = ErrorsByField(err)
 	if len(errs) != 2 {
 		t.Errorf("There should only be 2 errors but got %v", len(errs))
@@ -3554,11 +3570,11 @@ func TestErrorsByField(t *testing.T) {
 		param    string
 		expected string
 	}{
-		{"Email", "My123 does not validate as email"},
+		{"Email", "only email pattern are allowed, found My123"},
 		{"ID", "duck13126 does not validate as falseValidation"},
 	}
 	s := &StructWithCustomValidation{Email: "My123", ID: "duck13126"}
-	_, err = ValidateStruct(s)
+	err = ValidateStruct(s)
 	errs = ErrorsByField(err)
 	if len(errs) != 2 {
 		t.Errorf("There should only be 2 errors but got %v", len(errs))
@@ -3585,7 +3601,7 @@ func TestValidateStructPointers(t *testing.T) {
 		expected string
 	}{
 		{"Name", ""},
-		{"Email", "invalid does not validate as email"},
+		{"Email", "only email pattern are allowed, found invalid"},
 		{"FavoriteFood", ""},
 		{"Nerd", ""},
 	}
@@ -3595,7 +3611,7 @@ func TestValidateStructPointers(t *testing.T) {
 	food := "Pizza"
 	nerd := true
 	user := &UserWithPointers{&name, &email, &food, &nerd}
-	_, err := ValidateStruct(user)
+	err := ValidateStruct(user)
 
 	for _, test := range tests {
 		actual := ErrorByField(err, test.param)
@@ -3618,11 +3634,11 @@ func ExampleValidateStruct() {
 		return str == "duck"
 	})
 
-	result, err := ValidateStruct(post)
+	err := ValidateStruct(post)
 	if err != nil {
 		println("error: " + err.Error())
 	}
-	println(result)
+	println(err == nil)
 }
 
 func TestValidateStructParamValidatorInt(t *testing.T) {
@@ -3645,12 +3661,12 @@ func TestValidateStructParamValidatorInt(t *testing.T) {
 	test1Ok := &Test1{5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5}
 	test1NotOk := &Test1{11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11}
 
-	_, err := ValidateStruct(test1Ok)
+	err := ValidateStruct(test1Ok)
 	if err != nil {
 		t.Errorf("Test failed: %s", err)
 	}
 
-	_, err = ValidateStruct(test1NotOk)
+	err = ValidateStruct(test1NotOk)
 	if err == nil {
 		t.Errorf("Test failed: nil")
 	}
@@ -3676,17 +3692,17 @@ func TestValidateStructParamValidatorInt(t *testing.T) {
 	test2Ok2 := &Test2{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
 	test2NotOk := &Test2{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
 
-	_, err = ValidateStruct(test2Ok1)
+	err = ValidateStruct(test2Ok1)
 	if err != nil {
 		t.Errorf("Test failed: %s", err)
 	}
 
-	_, err = ValidateStruct(test2Ok2)
+	err = ValidateStruct(test2Ok2)
 	if err != nil {
 		t.Errorf("Test failed: %s", err)
 	}
 
-	_, err = ValidateStruct(test2NotOk)
+	err = ValidateStruct(test2NotOk)
 	if err == nil {
 		t.Errorf("Test failed: nil")
 	}
@@ -3712,17 +3728,17 @@ func TestValidateStructParamValidatorInt(t *testing.T) {
 	test3Ok2 := &Test3{10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10}
 	test3NotOk := &Test3{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}
 
-	_, err = ValidateStruct(test3Ok1)
+	err = ValidateStruct(test3Ok1)
 	if err != nil {
 		t.Errorf("Test failed: %s", err)
 	}
 
-	_, err = ValidateStruct(test3Ok2)
+	err = ValidateStruct(test3Ok2)
 	if err != nil {
 		t.Errorf("Test failed: %s", err)
 	}
 
-	_, err = ValidateStruct(test3NotOk)
+	err = ValidateStruct(test3NotOk)
 	if err == nil {
 		t.Errorf("Test failed: nil")
 	}
@@ -3735,7 +3751,7 @@ func TestValidateStructUpperAndLowerCaseWithNumTypeCheck(t *testing.T) {
 	}
 
 	structCapital := &StructCapital{53.3535}
-	_, err := ValidateStruct(structCapital)
+	err := ValidateStruct(structCapital)
 	if err != nil {
 		t.Errorf("Test failed: nil")
 		fmt.Println(err)
@@ -3746,7 +3762,7 @@ func TestValidateStructUpperAndLowerCaseWithNumTypeCheck(t *testing.T) {
 	}
 
 	structLower := &StructLower{53.3535}
-	_, err = ValidateStruct(structLower)
+	err = ValidateStruct(structLower)
 	if err != nil {
 		t.Errorf("Test failed: nil")
 		fmt.Println(err)
@@ -3787,15 +3803,12 @@ func TestOptionalCustomValidators(t *testing.T) {
 		OptionalFirst      string `validate:"optional,f2"`
 	}
 
-	ok, err := ValidateStruct(val)
+	err := ValidateStruct(val)
 
 	if err != nil {
 		t.Errorf("Expected nil err with optional validation, got %v", err)
 	}
 
-	if !ok {
-		t.Error("Expected validation to return true, got false")
-	}
 }
 
 func TestJSONValidator(t *testing.T) {
@@ -3808,7 +3821,7 @@ func TestJSONValidator(t *testing.T) {
 		WithEmptyJSONName string `json:"-" validate:"-,required"`
 	}
 
-	_, err := ValidateStruct(val)
+	err := ValidateStruct(val)
 
 	if err == nil {
 		t.Error("Expected error but got no error")
@@ -3844,7 +3857,8 @@ func TestValidatorIncludedInError(t *testing.T) {
 		"AuthorIP": "ipv4",
 	}
 
-	ok, errors := ValidateStruct(post)
+	errors := ValidateStruct(post)
+	ok := (errors == nil)
 	if ok {
 		t.Errorf("expected validation to fail %v", ok)
 	}
@@ -3868,8 +3882,8 @@ func TestValidatorIncludedInError(t *testing.T) {
 		"Body":  "length",
 	}
 
-	ok, errors = ValidateStruct(message)
-	if ok {
+	errors = ValidateStruct(message)
+	if errors == nil {
 		t.Errorf("expected validation to fail, %v", ok)
 	}
 
@@ -3886,8 +3900,8 @@ func TestValidatorIncludedInError(t *testing.T) {
 	}
 	cs := CustomMessage{Text: "asdfasdfasdfasdf"}
 
-	ok, errors = ValidateStruct(&cs)
-	if ok {
+	errors = ValidateStruct(&cs)
+	if errors == nil {
 		t.Errorf("expected validation to fail, %v", ok)
 	}
 
