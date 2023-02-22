@@ -1692,9 +1692,9 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf(TagErrNegMsgMap[validator], t.Name, field), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, Error{t.Name, fmt.Errorf(TagErrNegMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
-						return false, Error{t.Name, fmt.Errorf(TagErrMsgMap[validator], t.Name, field), customMsgExists, stripParams(validatorSpec), []string{}}
+						return false, Error{t.Name, fmt.Errorf(TagErrMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)
