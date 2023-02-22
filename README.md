@@ -283,7 +283,7 @@ Here is a list of available validators for struct fields (validator - used funct
 | "alphanum" |          Alphabet and numeric format value allowed |
 | "alphanumspace" |      Alphabet numeric and whitespace format value allowed|
 | "word" |               Alphabet, numeric, (-) and (_)values are allowed |
-| "wordspace" |          Alphabet, numeric, (-), (_) and whitespace values are allowed |
+| "text" |          Alphabet, numeric, -, _, +, ;, &, /, \,  (), : and whitespace values are allowed |
 | "phone" |			  Phone format without space are allowed |
 | "indophone" |		  Indonesia phone number format are allowed. (Ex: 628xxxx. 08xxxx, +628xxxxx) |
 | "utfletternum" |       UTF Letter values are allowed |
@@ -380,7 +380,7 @@ var mapTemplate = map[string]interface{}{
 	"cell-phone":"phone",
 	"address":map[string]interface{}{
 		"line1":"required,alphanumspace",
-		"line2":"wordspace",
+		"line2":"text",
 		"postal-code":"numeric",
 	},
 }

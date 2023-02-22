@@ -179,12 +179,12 @@ func IsWord(str string) bool {
 	return rxWord.MatchString(str)
 }
 
-// IsAlphaSpace checks if the string contains only letters (a-zA-Z) with whitespace. Empty string is valid.
-func IsWordSpace(str string) bool {
+// IsText checks if the string contains only letters (a-zA-Z) with whitespace, "-", ".", ";", "()", "?", "\", "/". Empty string is valid.
+func IsText(str string) bool {
 	if IsNull(str) {
 		return true
 	}
-	return rxWordSpace.MatchString(str)
+	return rxText.MatchString(str)
 }
 
 // IsUTFLetter checks if the string contains only unicode letter characters.
@@ -1692,9 +1692,9 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf(TagErrNegMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, Error{t.Name, fmt.Errorf(TagErrNegMsgMap[validator], t.Name, field), customMsgExists, stripParams(validatorSpec), []string{}}
 						}
-						return false, Error{t.Name, fmt.Errorf(TagErrMsgMap[validator], field), customMsgExists, stripParams(validatorSpec), []string{}}
+						return false, Error{t.Name, fmt.Errorf(TagErrMsgMap[validator], t.Name, field), customMsgExists, stripParams(validatorSpec), []string{}}
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)

@@ -13,7 +13,7 @@ const (
 	Float             string = `^(?:[-+]?(?:[0-9]+))?(?:[\.\,][0-9]*)?(?:[eE][\+\-]?(?:[0-9]+))?$`
 	Email             string = `^([\w\.\+-])+@([a-zA-Z0-9\.-])+[a-zA-Z0-9]\.([a-zA-Z0-9]{2,64})$`
 	Word              string = `^[\w]+$`
-	WordSpace         string = `^[\w\s]+$`
+	Text              string = `^[\w\s\;\,\.\:\?\-\(\)\&\+\>\<]+$`
 	Phone             string = `^(\+?)?\d{3,15}$`
 	IndoPhone         string = `^(((\+?62)|(0|02|03|04|07|08))\d{3,15})$`
 	Nik               string = `^\d{16}$`
@@ -120,7 +120,7 @@ var (
 	rxIMSI              = regexp.MustCompile(IMSI)
 	rxE164              = regexp.MustCompile(E164)
 	rxWord              = regexp.MustCompile(Word)
-	rxWordSpace         = regexp.MustCompile(WordSpace)
+	rxText              = regexp.MustCompile(Text)
 	rxPhone             = regexp.MustCompile(Phone)
 	rxIndoPhone         = regexp.MustCompile(IndoPhone)
 	rxNik               = regexp.MustCompile(Nik)
